@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Instalar extensões PHP necessárias
+# Instalar extensões PHP necessárias (exceto curl por enquanto)
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         gd \
@@ -32,8 +32,10 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         intl \
         mbstring \
         xml \
-        curl \
         json
+
+# Instalar a extensão curl separadamente, garantindo que libcurl-dev esteja disponível
+RUN docker-php-ext-install curl
 
 # Habilitar módulos do Apache
 RUN a2enmod rewrite headers ssl
