@@ -5,7 +5,7 @@ FROM php:8.1-apache
 ENV APACHE_DOCUMENT_ROOT /var/www/html
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Instalar dependências do sistema
+# Instalar dependências do sistema e de compilação
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -15,26 +15,22 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libcurl4-openssl-dev \
-    curl \
-    zip \
-    unzip \
+    pkg-config \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Instalar extensões PHP necessárias (exceto curl por enquanto)
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-        gd \
-        pdo \
-        pdo_mysql \
-        mysqli \
-        zip \
-        intl \
-        mbstring \
-        xml \
-        json
-
-# Instalar a extensão curl separadamente, garantindo que libcurl-dev esteja disponível
+# Instalar extensões PHP necessárias, uma por uma, sem -j$(nproc)
+# Isso evita problemas de concorrência e garante que cada extensão seja instalada corretamente.
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+RUN docker-php-ext-install gd
+RUN docker-php-ext-install pdo
+RUN docker-php-ext-install pdo_mysql
+RUN docker-php-ext-install mysqli
+RUN docker-php-ext-install zip
+RUN docker-php-ext-install intl
+RUN docker-php-ext-install mbstring
+RUN docker-php-ext-install xml
+RUN docker-php-ext-install json
 RUN docker-php-ext-install curl
 
 # Habilitar módulos do Apache
