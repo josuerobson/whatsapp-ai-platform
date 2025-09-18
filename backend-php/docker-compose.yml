@@ -1,0 +1,101 @@
+# Docker Compose para Plataforma WhatsApp AI
+version: '3.8'
+
+services:
+  # Banco de Dados MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: whatsapp-ai-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root123}
+      MYSQL_DATABASE: ${DB_NAME:-whatsapp_platform}
+      MYSQL_USER: ${DB_USER:-whatsapp_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-whatsapp123}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    ports:
+      - "3306:3306"
+    networks:
+      - whatsapp-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Backend PHP
+  backend:
+    build: .
+    container_name: whatsapp-ai-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      # Configurações do Banco de Dados
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-whatsapp_platform}
+      DB_USER: ${DB_USER:-whatsapp_user}
+      DB_PASSWORD: ${DB_PASSWORD:-whatsapp123}
+      
+      # Configurações da Aplicação
+      APP_ENV: ${APP_ENV:-production}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_URL: ${APP_URL:-https://anunciarnogoogle.com}
+      API_BASE_URL: ${API_BASE_URL:-https://anunciarnogoogle.com/api}
+      
+      # Chaves de API
+      GOOGLE_GEMINI_API_KEY: ${GOOGLE_GEMINI_API_KEY}
+      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
+      EVOLUTION_API_URL: ${EVOLUTION_API_URL}
+      
+      # Segurança
+      JWT_SECRET: ${JWT_SECRET}
+      PASSWORD_SALT: ${PASSWORD_SALT}
+      
+      # N8N Integration
+      N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL}
+      
+      # Executar migrações na inicialização
+      RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
+    ports:
+      - "80:80"
+    volumes:
+      - ./logs:/var/log/apache2
+    networks:
+      - whatsapp-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/test.php"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # phpMyAdmin (opcional, para desenvolvimento)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: whatsapp-ai-phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: ${DB_USER:-whatsapp_user}
+      PMA_PASSWORD: ${DB_PASSWORD:-whatsapp123}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root123}
+    ports:
+      - "8080:80"
+    networks:
+      - whatsapp-network
+    profiles:
+      - development
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  whatsapp-network:
+    driver: bridge

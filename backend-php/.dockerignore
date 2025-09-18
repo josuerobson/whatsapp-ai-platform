@@ -1,0 +1,66 @@
+# Arquivos de desenvolvimento
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Logs
+logs/
+*.log
+
+# Arquivos temporários
+tmp/
+temp/
+cache/
+
+# Arquivos de backup
+*.sql.backup
+*.sql.gz
+backup/
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Arquivos do Git
+.git/
+.gitignore
+
+# Documentação
+README.md
+*.md
+docs/
+
+# Arquivos de teste
+tests/
+test/
+phpunit.xml
+.phpunit.result.cache
+
+# Dependências de desenvolvimento
+composer.lock
+vendor/
+
+# Arquivos de IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Arquivos de deploy
+docker-compose.yml
+docker-compose.override.yml
+Dockerfile
+.dockerignore
+
+# Arquivos de CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Arquivos de configuração local
+config/local.php
+config/development.php

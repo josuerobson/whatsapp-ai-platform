@@ -1,0 +1,71 @@
+RewriteEngine On
+
+# Habilitar CORS para todas as requisições
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+
+# Redirecionar requisições da API para os endpoints corretos
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]
+
+# Redirecionar /api/ai/generate-response para o endpoint correto
+RewriteRule ^api/ai/generate-response/?$ api/endpoints/generate-response.php [L,QSA]
+
+# Redirecionar /api/settings/* para o endpoint de configurações
+RewriteRule ^api/settings/(.*)$ api/endpoints/settings.php [L,QSA]
+
+# Redirecionar /api/messages/* para o endpoint de mensagens
+RewriteRule ^api/messages/(.*)$ api/endpoints/messages.php [L,QSA]
+
+# Redirecionar /api/human-handoff para o endpoint de transferência
+RewriteRule ^api/human-handoff/?$ api/endpoints/human-handoff.php [L,QSA]
+
+# Redirecionar /api/webhook/evolution para o endpoint de webhook da Evolution API
+RewriteRule ^api/webhook/evolution/?$ api/endpoints/evolution-webhook.php [L,QSA]
+
+# Redirecionar /api/webhook-simulator/* para o simulador de webhooks
+RewriteRule ^api/webhook-simulator/(.*)$ api/endpoints/webhook-simulator.php [L,QSA]
+
+# Bloquear acesso direto aos arquivos de configuração
+<Files "database.php">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Configurações de segurança
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options DENY
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Configurações de cache para arquivos estáticos
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+</IfModule>
+
+# Configurações de compressão
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/json
+</IfModule>
+
+# Página de erro personalizada
+ErrorDocument 404 /404.html
+ErrorDocument 500 /500.html
