@@ -16,24 +16,46 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libcurl4-openssl-dev \
     pkg-config \
-    curl \
-    zip \
-    unzip \
     git \
+    build-essential \
+    libsqlite3-dev \
+    # Dependências para curl, se necessário
+    # libssl-dev \
+    # libnghttp2-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Instalar extensões PHP necessárias, uma por uma, sem -j$(nproc)
-# Isso evita problemas de concorrência e garante que cada extensão seja instalada corretamente.
+# Instalar e habilitar extensões PHP manualmente para maior robustez
+# Isso contorna o problema de 'cp: cannot stat modules/*' ao gerenciar a compilação e habilitação.
+
+# Configurar e instalar GD
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install gd
+
+# Instalar PDO
 RUN docker-php-ext-install pdo
+
+# Instalar PDO_MySQL
 RUN docker-php-ext-install pdo_mysql
+
+# Instalar MySQLi
 RUN docker-php-ext-install mysqli
+
+# Instalar Zip
 RUN docker-php-ext-install zip
+
+# Instalar Intl
 RUN docker-php-ext-install intl
+
+# Instalar Mbstring
 RUN docker-php-ext-install mbstring
+
+# Instalar XML
 RUN docker-php-ext-install xml
+
+# Instalar JSON
 RUN docker-php-ext-install json
+
+# Instalar CURL
 RUN docker-php-ext-install curl
 
 # Habilitar módulos do Apache
